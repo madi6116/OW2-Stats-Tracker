@@ -1,14 +1,19 @@
-export default function Homepage({ onLogoutClick, onSearchClick, onStatsClick, username }) {
+export default function Homepage({
+  onLogoutClick,
+  onSearchClick,
+  onStatsClick,
+  username,
+}) {
   const handleSearchClick = () => {
     onSearchClick(); // goes to Search page
   };
 
   const handleSearchPlayers = () => {
-    onSearchClick(); 
+    onSearchClick();
   };
 
   const handleViewStats = () => {
-    onStatsClick(); // goes to Stats page 
+    onStatsClick(); // goes to Stats page
   };
 
   return (
@@ -17,8 +22,7 @@ export default function Homepage({ onLogoutClick, onSearchClick, onStatsClick, u
         width: "100%",
         minHeight: "100vh",
         position: "relative",
-       background:
-          "linear-gradient(180deg, #1A2332 0%, #0D1117 100%), white",
+        background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%), white",
         display: "flex",
         overflowY: "auto",
         fontFamily: "Arial",
@@ -130,11 +134,20 @@ export default function Homepage({ onLogoutClick, onSearchClick, onStatsClick, u
           </div>
 
           {/* Quick Search & Stats */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "nowrap", // keep items on one row
+              gap: 24,
+              justifyContent: "space-between",
+              alignItems: "stretch",
+            }}
+          >
             {/* Quick Search */}
             <div
               style={{
-                width: 446,
+                flex: "0 0 446px", // fixed ideal width but allow layout control
+                maxWidth: "48%",
                 background: "rgba(255,255,255,0.05)",
                 borderRadius: 12,
                 border: "0.8px solid rgba(255,255,255,0.1)",
@@ -187,7 +200,8 @@ export default function Homepage({ onLogoutClick, onSearchClick, onStatsClick, u
             {/* Your Stats */}
             <div
               style={{
-                width: 446,
+                flex: "0 0 446px",
+                maxWidth: "48%",
                 background: "rgba(255,255,255,0.05)",
                 borderRadius: 12,
                 border: "0.8px solid rgba(255,255,255,0.1)",
@@ -222,7 +236,7 @@ export default function Homepage({ onLogoutClick, onSearchClick, onStatsClick, u
                 View your detailed performance metrics
               </div>
               <div
-                onClick={handleViewStats} 
+                onClick={handleViewStats}
                 style={{
                   width: "100%",
                   height: 48,
@@ -340,8 +354,8 @@ export default function Homepage({ onLogoutClick, onSearchClick, onStatsClick, u
                       {i === 0
                         ? "2 hours ago"
                         : i === 1
-                        ? "1 day ago"
-                        : "3 days ago"}
+                          ? "1 day ago"
+                          : "3 days ago"}
                     </span>
                   </div>
                   <div
@@ -353,8 +367,8 @@ export default function Homepage({ onLogoutClick, onSearchClick, onStatsClick, u
                     {i === 0
                       ? "Diamond 3"
                       : i === 1
-                      ? "Master 2"
-                      : "Platinum 1"}
+                        ? "Master 2"
+                        : "Platinum 1"}
                   </div>
                 </div>
               )
