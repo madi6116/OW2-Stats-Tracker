@@ -1,0 +1,10 @@
+# Environment files
+.env
+
+# Dependencies
+node_modules/
+
+# Editor and build files
+.vscode/
+dist/
+build/
