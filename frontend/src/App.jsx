@@ -1,9 +1,10 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/Signup.jsx";
-import Homepage from "./pages/homepage.jsx";
+import Homepage from "./pages/Homepage.jsx";
 import SearchPage from "./pages/Search-Page.jsx";
 import StatsPage from "./pages/Stats-Page.jsx";
+import { supabase } from "./supabaseClient.js";
 
 export default function App() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export default function App() {
         path="/signup"
         element={
           <SignUp
-            onLoginClick={() => navigate("/")}
+            onLoginClick={navigate("/")}
             onSignUpSuccess={() => navigate("/home")}
           />
         }
@@ -37,7 +38,10 @@ export default function App() {
         path="/home"
         element={
           <Homepage
-            onLogoutClick={() => navigate("/")}
+            onLogoutClick={async () => {
+              await supabase.auth.signOut();
+              navigate("/");
+            }}
             onSearchClick={() => navigate("/search")}
             onStatsClick={() => navigate("/stats")}
           />
@@ -50,7 +54,10 @@ export default function App() {
         element={
           <SearchPage
             onHomeClick={() => navigate("/home")}
-            onLogoutClick={() => navigate("/")}
+            onLogoutClick={async () => {
+              await supabase.auth.signOut();
+              navigate("/");
+            }}
           />
         }
       />
@@ -61,7 +68,10 @@ export default function App() {
         element={
           <StatsPage
             onHomeClick={() => navigate("/home")}
-            onLogoutClick={() => navigate("/")}
+            onLogoutClick={async () => {
+              await supabase.auth.signOut();
+              navigate("/");
+            }}
             onSearchClick={() => navigate("/search")}
           />
         }
