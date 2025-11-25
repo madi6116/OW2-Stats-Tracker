@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { supabase } from "../supabaseClient"; 
 export default function Login({ onSignUpClick, onLoginSuccess }) {
   // removed unused `username` state
@@ -6,6 +6,18 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  
+  useEffect(() => { 
+    const checkUserLoggedIn = async () => { 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if(user) { 
+        onLoginSuccess();
+      }
+    }
+    checkUserLoggedIn();
+  },[onLoginSuccess])
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -13,6 +25,7 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
       setMessage("⚠️ Please enter both email and password.");
       return;
     }
+
 
   
     const { data, error } = await supabase.auth.signInWithPassword({
