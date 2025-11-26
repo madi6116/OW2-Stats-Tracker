@@ -1,81 +1,46 @@
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useSession } from "./hooks/SessionHook";
+
 import Login from "./pages/Login.jsx";
 import SignUp from "./pages/Signup.jsx";
 import Homepage from "./pages/Homepage.jsx";
 import SearchPage from "./pages/Search-Page.jsx";
 import StatsPage from "./pages/Stats-Page.jsx";
-import { supabase } from "./supabaseClient.js";
 
 export default function App() {
-  const navigate = useNavigate();
+  const { session } = useSession();
 
   return (
     <Routes>
-      {/* LOGIN */}
+      {/* Public */}
       <Route
         path="/"
-        element={
-          <Login
-            onSignUpClick={() => navigate("/signup")}
-            onLoginSuccess={() => navigate("/home")}
-          />
-        }
+        element={!session ? <Login /> : <Navigate to="/home" replace />}
       />
 
-      {/* SIGN UP */}
       <Route
         path="/signup"
-        element={
-          <SignUp
-            onLoginClick={navigate("/")}
-            onSignUpSuccess={() => navigate("/home")}
-          />
-        }
+        element={!session ? <SignUp /> : <Navigate to="/home" replace />}
       />
 
-      {/* HOME */}
+      {/* Protected */}
       <Route
         path="/home"
-        element={
-          <Homepage
-            onLogoutClick={async () => {
-              await supabase.auth.signOut();
-              navigate("/");
-            }}
-            onSearchClick={() => navigate("/search")}
-            onStatsClick={() => navigate("/stats")}
-          />
-        }
+        element={session ? <Homepage /> : <Navigate to="/" replace />}
       />
 
-      {/* SEARCH */}
       <Route
         path="/search"
-        element={
-          <SearchPage
-            onHomeClick={() => navigate("/home")}
-            onLogoutClick={async () => {
-              await supabase.auth.signOut();
-              navigate("/");
-            }}
-          />
-        }
+        element={session ? <SearchPage /> : <Navigate to="/" replace />}
       />
 
-      {/* STATS */}
       <Route
         path="/stats"
-        element={
-          <StatsPage
-            onHomeClick={() => navigate("/home")}
-            onLogoutClick={async () => {
-              await supabase.auth.signOut();
-              navigate("/");
-            }}
-            onSearchClick={() => navigate("/search")}
-          />
-        }
+        element={session ? <StatsPage /> : <Navigate to="/" replace />}
       />
+
+      {/* Catch-all redirect */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

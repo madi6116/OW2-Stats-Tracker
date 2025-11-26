@@ -1,19 +1,9 @@
-export default function Homepage({
-  onLogoutClick,
-  onSearchClick,
-  onStatsClick,
-  username,
-}) {
-  const handleSearchClick = () => {
-    onSearchClick(); // goes to Search page
-  };
+import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
-  const handleSearchPlayers = () => {
-    onSearchClick();
-  };
-
-  const handleViewStats = () => {
-    onStatsClick(); // goes to Stats page
+export default function Homepage({ username }) {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
@@ -31,11 +21,12 @@ export default function Homepage({
       <div
         style={{
           width: 980,
-          minHeight: 1096,
+          minHeight: "100vh",
           margin: "0 auto",
           background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
           color: "white",
           position: "relative",
+          paddingBottom: 80, // 🔥 Ensures bottom content never cuts off
         }}
       >
         {/* Header */}
@@ -70,7 +61,7 @@ export default function Homepage({
               <div style={{ fontSize: 16 }}>Overwatch Stats Tracker</div>
             </div>
 
-            {/* Navigation bar */}
+            {/* Nav bar */}
             <div
               style={{
                 display: "flex",
@@ -81,37 +72,39 @@ export default function Homepage({
             >
               <div style={{ color: "#FF5C00", fontWeight: "700" }}>Home</div>
 
-              {/* Search Button */}
-              <div
-                onClick={handleSearchClick}
+              <Link
+                to="/search"
                 style={{
                   background: "rgba(255,255,255,0.1)",
                   border: "0.8px solid rgba(255,255,255,0.2)",
                   borderRadius: 6,
                   padding: "8px 16px",
                   cursor: "pointer",
+                  color: "white",
+                  textDecoration: "none",
                 }}
               >
                 Search
-              </div>
+              </Link>
 
-              <div
-                onClick={onLogoutClick}
+              <button
+                onClick={handleLogout}
                 style={{
                   background: "rgba(255,255,255,0.1)",
                   border: "0.8px solid rgba(255,255,255,0.2)",
                   borderRadius: 6,
                   padding: "8px 16px",
                   cursor: "pointer",
+                  color: "white",
                 }}
               >
                 Logout
-              </div>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content Wrapper */}
         <div
           style={{
             width: 916,
@@ -126,18 +119,18 @@ export default function Homepage({
           {/* Welcome */}
           <div>
             <div style={{ fontSize: 16, marginBottom: 4 }}>
-              {`Welcome back, ${username}!`}
+              {`Welcome back, ${username || "User"}!`}
             </div>
             <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
               Track and analyze your Overwatch performance
             </div>
           </div>
 
-          {/* Quick Search & Stats */}
+          {/* QUICK SEARCH + YOUR STATS */}
           <div
             style={{
               display: "flex",
-              flexWrap: "nowrap", // keep items on one row
+              flexWrap: "nowrap",
               gap: 24,
               justifyContent: "space-between",
               alignItems: "stretch",
@@ -146,7 +139,7 @@ export default function Homepage({
             {/* Quick Search */}
             <div
               style={{
-                flex: "0 0 446px", // fixed ideal width but allow layout control
+                flex: "0 0 446px",
                 maxWidth: "48%",
                 background: "rgba(255,255,255,0.05)",
                 borderRadius: 12,
@@ -172,6 +165,7 @@ export default function Homepage({
                   }}
                 ></div>
               </div>
+
               <div
                 style={{
                   color: "rgba(255,255,255,0.6)",
@@ -181,8 +175,9 @@ export default function Homepage({
               >
                 Search for any player’s stats and performance
               </div>
-              <div
-                onClick={handleSearchPlayers}
+
+              <Link
+                to="/search"
                 style={{
                   width: "100%",
                   height: 48,
@@ -191,13 +186,16 @@ export default function Homepage({
                   textAlign: "center",
                   lineHeight: "48px",
                   cursor: "pointer",
+                  color: "white",
+                  textDecoration: "none",
+                  display: "block",
                 }}
               >
                 Search Players
-              </div>
+              </Link>
             </div>
 
-            {/* Your Stats */}
+            {/* YOUR STATS */}
             <div
               style={{
                 flex: "0 0 446px",
@@ -226,6 +224,7 @@ export default function Homepage({
                   }}
                 ></div>
               </div>
+
               <div
                 style={{
                   color: "rgba(255,255,255,0.6)",
@@ -235,8 +234,9 @@ export default function Homepage({
               >
                 View your detailed performance metrics
               </div>
-              <div
-                onClick={handleViewStats}
+
+              <Link
+                to="/stats"
                 style={{
                   width: "100%",
                   height: 48,
@@ -245,13 +245,17 @@ export default function Homepage({
                   textAlign: "center",
                   lineHeight: "48px",
                   cursor: "pointer",
+                  color: "white",
+                  textDecoration: "none",
+                  display: "block",
                 }}
               >
                 View Stats
-              </div>
+              </Link>
             </div>
           </div>
-          {/* The Shop */}
+
+          {/* THE SHOP (RESTORED FULL SECTION) */}
           <div
             style={{
               width: 916,
@@ -289,6 +293,7 @@ export default function Homepage({
               >
                 Currently in the Shop
               </button>
+
               <button
                 style={{
                   flex: 1,
@@ -307,7 +312,7 @@ export default function Homepage({
             </div>
           </div>
 
-          {/* Recent Searches */}
+          {/* RECENT SEARCHES (FULLY RESTORED) */}
           <div
             style={{
               width: 916,
@@ -325,7 +330,6 @@ export default function Homepage({
               Your recently viewed players
             </div>
 
-            {/* Example search cards */}
             {["Player-1234", "ProGamer-5678", "OverwatchFan-9012"].map(
               (name, i) => (
                 <div
@@ -354,10 +358,11 @@ export default function Homepage({
                       {i === 0
                         ? "2 hours ago"
                         : i === 1
-                          ? "1 day ago"
-                          : "3 days ago"}
+                        ? "1 day ago"
+                        : "3 days ago"}
                     </span>
                   </div>
+
                   <div
                     style={{
                       color: "rgba(255,255,255,0.6)",
@@ -367,15 +372,15 @@ export default function Homepage({
                     {i === 0
                       ? "Diamond 3"
                       : i === 1
-                        ? "Master 2"
-                        : "Platinum 1"}
+                      ? "Master 2"
+                      : "Platinum 1"}
                   </div>
                 </div>
               )
             )}
           </div>
 
-          {/* Quick Stats */}
+          {/* QUICK STATS (FULLY RESTORED) */}
           <div
             style={{
               width: 916,
@@ -392,6 +397,7 @@ export default function Homepage({
             <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
               Overview of your performance
             </div>
+
             <div
               style={{
                 background: "rgba(250,156,30,0.1)",
@@ -404,6 +410,7 @@ export default function Homepage({
                 Tank Rank: <b>Diamond 3 ↑2</b>
               </div>
             </div>
+
             <div
               style={{
                 background: "rgba(0,152,220,0.1)",
@@ -416,6 +423,7 @@ export default function Homepage({
                 DPS Rank: <b>Platinum 1 ↑1</b>
               </div>
             </div>
+
             <div
               style={{
                 background: "rgba(118,138,154,0.1)",

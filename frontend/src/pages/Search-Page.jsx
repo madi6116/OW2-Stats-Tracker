@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
-export default function SearchPage({ onHomeClick, onLogoutClick }) {
+export default function SearchPage() {
   const [battleTag, setBattleTag] = useState("");
 
   const handleSearch = () => {
@@ -9,6 +11,10 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
       return;
     }
     alert(`🔍 Searching for: ${battleTag}`);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
@@ -20,33 +26,23 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
         background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
         fontFamily: "Arial",
         display: "flex",
-        flexDirection: "column",    // stack children vertically
+        flexDirection: "column",
         justifyContent: "flex-start",
-        alignItems: "center",       // center children horizontally
+        alignItems: "center",
         paddingTop: 24,
         boxSizing: "border-box",
       }}
     >
-       {/* Header */}
-        <div
-          style={{
-            width: 980,
-            padding: "16px 32px 8px 32px",
-            borderBottom: "0.8px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-            </div>
-
-
-          {/* Logo + Title */}
+      {/* Header */}
+      <div
+        style={{
+          width: 980,
+          padding: "16px 32px 8px 32px",
+          borderBottom: "0.8px solid rgba(255,255,255,0.1)",
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {/* Logo */}
           <div
             style={{
               height: 40,
@@ -73,7 +69,7 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
             </div>
           </div>
 
-          {/* Home + Logout */}
+          {/* Links */}
           <div
             style={{
               height: 40,
@@ -83,30 +79,25 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
               marginTop: 4,
             }}
           >
-            <div
-              onClick={onHomeClick}
+            <Link
+              to="/home"
               style={{
                 width: 74.9,
                 height: 40,
                 borderRadius: 6,
                 cursor: "pointer",
+                color: "rgba(255,255,255,0.7)",
+                fontSize: 16,
+                textDecoration: "none",
+                display: "flex",
+                alignItems: "center",
               }}
             >
-              <div
-                style={{
-                  left: 16,
-                  top: 6.2,
-                  position: "relative",
-                  color: "rgba(255,255,255,0.7)",
-                  fontSize: 16,
-                }}
-              >
-                Home
-              </div>
-            </div>
+              Home
+            </Link>
 
-            <div
-              onClick={onLogoutClick}
+            <button
+              onClick={handleLogout}
               style={{
                 width: 77.5,
                 height: 38.6,
@@ -120,7 +111,7 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
               }}
             >
               <span style={{ color: "white", fontSize: 14 }}>Logout</span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
@@ -140,7 +131,7 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
           marginRight: "auto",
         }}
       >
-        {/* Input Field + Search */}
+        {/* Input Field */}
         <div
           style={{
             height: 97.6,
@@ -175,7 +166,6 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
               }}
             />
 
-            {/* Search Button */}
             <button
               onClick={handleSearch}
               style={{
@@ -199,7 +189,7 @@ export default function SearchPage({ onHomeClick, onLogoutClick }) {
           </div>
         </div>
 
-        {/* Empty Placeholder */}
+        {/* Placeholder Section */}
         <div
           style={{
             width: "100%",

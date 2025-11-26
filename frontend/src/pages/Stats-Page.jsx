@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
-export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick }) {
+export default function StatsPage() {
   const [roleOpen, setRoleOpen] = useState(false);
   const [heroOpen, setHeroOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false);
@@ -16,6 +18,11 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
   const mapRef = useRef(null);
   const typeRef = useRef(null);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // Dropdown outside click handling
   useEffect(() => {
     const handler = (e) => {
       if (
@@ -84,8 +91,9 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
     "Wrecking Ball",
     "Wuyang",
     "Zarya",
-    "Zenyatta"
+    "Zenyatta",
   ];
+
   const mapOptions = [
     "All Maps",
     "Busan",
@@ -125,14 +133,21 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
     "Paris",
     "Temple of Anubis",
     "Volskaya Industries",
-
   ];
-  const typeOptions = ["All Types", "Escort", "Control", "Hybrid", "Push", "Flashpoint", "Clash", "Capture the Flag", "Deathmatch", "Elimination", "Special"];
 
-  const handleBackClick = () => onHomeClick();
-  const handleSearchClick = () => {
-    if (typeof onSearchClick === "function") onSearchClick();
-  };
+  const typeOptions = [
+    "All Types",
+    "Escort",
+    "Control",
+    "Hybrid",
+    "Push",
+    "Flashpoint",
+    "Clash",
+    "Capture the Flag",
+    "Deathmatch",
+    "Elimination",
+    "Special",
+  ];
 
   const Chevron = ({ open }) => (
     <div
@@ -158,16 +173,12 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
     forwardedRef,
   }) => (
     <div style={{ width: 204.6 }}>
-      <div style={{ width: 204.6, height: 21, position: "relative" }}>
+      <div style={{ height: 21 }}>
         <div
           style={{
-            left: 0,
-            top: -0.7,
-            position: "absolute",
             color: "rgba(255,255,255,0.70)",
             fontSize: 14,
             fontFamily: "Arial",
-            lineHeight: "21px",
           }}
         >
           {label}
@@ -189,7 +200,6 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
           alignItems: "center",
           justifyContent: "space-between",
           cursor: "pointer",
-          userSelect: "none",
         }}
       >
         <div
@@ -270,44 +280,34 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
       style={{
         width: "100%",
         minHeight: "100vh",
-        position: "relative",
         background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
         display: "flex",
-        justifyContent: "center",     // center content horizontally
-        alignItems: "flex-start",     // keep content starting at top
+        justifyContent: "center",
+        alignItems: "flex-start",
         overflowY: "auto",
         fontFamily: "Arial",
-        color: "white",               // default text color
+        color: "white",
         paddingTop: 24,
-        boxSizing: "border-box",
       }}
     >
-      <div
-        style={{
-          width: 980,                  // fixed content width to match header
-          margin: "0 auto",
-          position: "relative",
-          background: "transparent",
-          display: "block",
-        }}
-      >
+      <div style={{ width: 980, margin: "0 auto", paddingBottom: 80 }}>
         {/* HEADER */}
         <div
           style={{
             width: 980,
-            height: 112.8,
             paddingTop: 16,
             paddingLeft: 32,
             paddingRight: 32,
-            borderBottom: "0.8px solid rgba(255,255,255,0.10)", // line restored
+            borderBottom: "0.8px solid rgba(255,255,255,0.10)",
             display: "flex",
             flexDirection: "column",
-            background: "transparent",          // match page background
+            background: "transparent",
             position: "sticky",
             top: 0,
             zIndex: 100,
           }}
         >
+          {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ width: 40, height: 40, position: "relative" }}>
               <div
@@ -325,6 +325,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             <div style={{ fontSize: 16 }}>Overwatch Stats Tracker</div>
           </div>
 
+          {/* Navigation */}
           <div
             style={{
               display: "flex",
@@ -333,34 +334,38 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
               marginTop: 8,
             }}
           >
-            <div
-              onClick={onHomeClick}
+            <Link
+              to="/home"
               style={{
                 color: "rgba(255,255,255,0.7)",
                 fontSize: 16,
                 cursor: "pointer",
+                textDecoration: "none",
               }}
             >
               Home
-            </div>
+            </Link>
 
-           <div
-            onClick={handleSearchClick}
-            style={{
-              background: "rgba(255,255,255,0.1)",
-              border: "0.8px solid rgba(255,255,255,0.2)",
-              borderRadius: 6,
-              padding: "8px 16px",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            Search
-          </div>
-            <div
-              onClick={onLogoutClick}
+            <Link
+              to="/search"
+              style={{
+                background: "rgba(255,255,255,0.1)",
+                border: "0.8px solid rgba(255,255,255,0.2)",
+                borderRadius: 6,
+                padding: "8px 16px",
+                cursor: "pointer",
+                textDecoration: "none",
+                color: "white",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              Search
+            </Link>
+
+            <button
+              onClick={handleLogout}
               style={{
                 background: "rgba(255,255,255,0.1)",
                 border: "0.8px solid rgba(255,255,255,0.2)",
@@ -372,11 +377,11 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
               }}
             >
               Logout
-            </div>
+            </button>
           </div>
         </div>
 
-        {/* CONTENT */}
+        {/* CONTENT WRAPPER */}
         <div
           style={{
             width: 916,
@@ -386,25 +391,27 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             gap: 32,
           }}
         >
-          {/* Back & Player Info */}
+          {/* Back / Player Info */}
           <div>
-            <div
-              onClick={handleBackClick}
+            <Link
+              to="/home"
               style={{
                 width: 80,
                 height: 40,
                 background: "rgba(255,255,255,0.05)",
-                borderRadius: 6,
                 border: "0.8px solid rgba(255,255,255,0.2)",
+                borderRadius: 6,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
                 color: "rgba(255,255,255,0.7)",
+                textDecoration: "none",
               }}
             >
               ← Back
-            </div>
+            </Link>
+
             <div style={{ fontSize: 16, marginTop: 8 }}>DemoUser-1234</div>
             <div
               style={{
@@ -416,7 +423,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             </div>
           </div>
 
-          {/* Filters */}
+          {/* FILTERS */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -466,7 +473,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             />
           </div>
 
-          {/* Rank Summary */}
+          {/* RANK SUMMARY */}
           <div
             style={{
               display: "flex",
@@ -504,7 +511,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             ))}
           </div>
 
-          {/* Quick Stats */}
+          {/* QUICK STATS */}
           <div
             style={{
               display: "flex",
@@ -551,7 +558,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             ))}
           </div>
 
-          {/* Performance Sections (placeholders) */}
+          {/* WEEKLY PERFORMANCE */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -566,6 +573,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             </p>
           </div>
 
+          {/* PERFORMANCE OVERVIEW */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -580,6 +588,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             </p>
           </div>
 
+          {/* HERO STATS */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -594,6 +603,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             </p>
           </div>
 
+          {/* MAP PERFORMANCE */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -608,6 +618,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             </p>
           </div>
 
+          {/* COMBAT & SUPPORT STATS */}
           <div
             style={{
               display: "flex",
@@ -630,6 +641,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
                 Placeholder for eliminations, damage, deaths
               </p>
             </div>
+
             <div
               style={{
                 flex: 1,
@@ -647,6 +659,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
             </div>
           </div>
 
+          {/* RECENT MATCHES */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
@@ -655,7 +668,7 @@ export default function StatsPage({ onHomeClick, onLogoutClick, onSearchClick })
               padding: 24,
             }}
           >
-            <h3> Recent Matches (5)</h3>
+            <h3>📅 Recent Matches (5)</h3>
             <p style={{ color: "rgba(255,255,255,0.6)" }}>
               Placeholder for table (Date, Result, Map, Type, Hero, K/D)
             </p>

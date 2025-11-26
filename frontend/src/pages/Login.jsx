@@ -1,23 +1,15 @@
-import { useState, useEffect} from "react";
-import { supabase } from "../supabaseClient"; 
-export default function Login({ onSignUpClick, onLoginSuccess }) {
-  // removed unused `username` state
-  /* eslint-disable no-unused-vars */
+import { useState } from "react";
+import { supabase } from "../supabaseClient";
+import { Link } from "react-router-dom";
+import { useSession } from "../hooks/SessionHook";
+
+export default function Login() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  
-  useEffect(() => { 
-    const checkUserLoggedIn = async () => { 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if(user) { 
-        onLoginSuccess();
-      }
-    }
-    checkUserLoggedIn();
-  },[onLoginSuccess])
+
+  useSession();
+  // Redirect handled automatically in App.jsx
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -26,22 +18,13 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
       return;
     }
 
-
-  
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      console.error("Login error:", error.message);
-      setMessage(`${error.message}`);
-    } else {
-      setMessage("Logged in successfully!");
-      setTimeout(() => {
-        onLoginSuccess();
-      }, 1000);
-    }
+    if (error) setMessage(error.message);
+    else setMessage("Logged in successfully!");
   };
 
   return (
@@ -56,7 +39,14 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
         fontFamily: "Arial",
       }}
     >
-      <div style={{ width: 436, height: 654.4, position: "relative", color: "white" }}>
+      <div
+        style={{
+          width: 436,
+          height: 654.4,
+          position: "relative",
+          color: "white",
+        }}
+      >
         {/* Header Section */}
         <div
           style={{
@@ -155,8 +145,9 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
             >
               Login
             </button>
-            <button
-              onClick={onSignUpClick}
+
+            <Link
+              to="/signup"
               style={{
                 flex: 1,
                 borderRadius: 6,
@@ -164,11 +155,14 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
                 background: "transparent",
                 color: "white",
                 fontSize: 16,
+                textAlign: "center",
+                lineHeight: "49.6px",
+                textDecoration: "none",
                 cursor: "pointer",
               }}
             >
               Sign Up
-            </button>
+            </Link>
           </div>
 
           {/* Form Fields */}
@@ -176,9 +170,10 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
             onSubmit={handleLogin}
             style={{ display: "flex", flexDirection: "column", gap: 24 }}
           >
-            {/* Email */}
             <div>
-              <label style={{ display: "block", marginBottom: 8, fontSize: 16 }}>
+              <label
+                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
+              >
                 Email
               </label>
               <input
@@ -199,9 +194,10 @@ export default function Login({ onSignUpClick, onLoginSuccess }) {
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label style={{ display: "block", marginBottom: 8, fontSize: 16 }}>
+              <label
+                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
+              >
                 Password
               </label>
               <input

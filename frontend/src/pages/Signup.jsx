@@ -1,39 +1,31 @@
 import { useState } from "react";
-import { supabase } from "../supabaseClient"; 
+import { supabase } from "../supabaseClient";
+import { Link } from "react-router-dom";
 
-export default function SignUp({ onLoginClick, onSignUpSuccess }) {
+export default function SignUp() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  
   const handleSignUp = async (e) => {
     e.preventDefault();
+
     if (!username || !email || !password) {
       setMessage("⚠️ Please fill out all fields.");
       return;
     }
 
-    // Clear previous message
-    setMessage("");
-
-    // Sign up user in Supabase
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { username }, // save username as metadata
+        data: { username },
       },
     });
 
-    if (error) {
-      console.error("Signup error:", error.message);
-      setMessage(`${error.message}`);
-    } else {
-      setMessage("Account created successfully!");
-      setTimeout(() => onSignUpSuccess(), 1500);
-    }
+    if (error) setMessage(error.message);
+    else setMessage("Account created! Check your email to verify.");
   };
 
   return (
@@ -41,8 +33,7 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
       style={{
         width: "100%",
         minHeight: "calc(100vh + 2px)",
-        background:
-          "linear-gradient(180deg, #1A2332 0%, #0D1117 100%), white",
+        background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%), white",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -52,8 +43,15 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
         boxSizing: "border-box",
       }}
     >
-      <div style={{ width: 436, height: 760, position: "relative", color: "white" }}>
-        {/* Header Section */}
+      <div
+        style={{
+          width: 436,
+          height: 760,
+          position: "relative",
+          color: "white",
+        }}
+      >
+        {/* Header */}
         <div
           style={{
             width: 436,
@@ -94,7 +92,6 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
               style={{
                 color: "white",
                 fontSize: 16,
-                fontFamily: "Arial",
                 textAlign: "center",
               }}
             >
@@ -105,7 +102,6 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
             style={{
               color: "rgba(255,255,255,0.7)",
               fontSize: 16,
-              fontFamily: "Arial",
               textAlign: "center",
             }}
           >
@@ -130,10 +126,11 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
             gap: 24,
           }}
         >
+          {/* Header inside card */}
           <div>
-            <div style={{ fontSize: 16, marginBottom: 4 }}>Welcome</div>
+            <div style={{ fontSize: 16, marginBottom: 4 }}>Create Account</div>
             <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
-              Login or create an account to track your stats
+              Sign up to start tracking your stats
             </div>
           </div>
 
@@ -146,8 +143,8 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
               marginBottom: 8,
             }}
           >
-            <button
-              onClick={onLoginClick}
+            <Link
+              to="/"
               style={{
                 flex: 1,
                 borderRadius: 6,
@@ -155,11 +152,15 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
                 background: "transparent",
                 color: "white",
                 fontSize: 16,
+                textAlign: "center",
+                lineHeight: "49.6px",
+                textDecoration: "none",
                 cursor: "pointer",
               }}
             >
               Login
-            </button>
+            </Link>
+
             <button
               style={{
                 flex: 1,
@@ -176,10 +177,15 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
           </div>
 
           {/* Form fields */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <form
+            onSubmit={handleSignUp}
+            style={{ display: "flex", flexDirection: "column", gap: 24 }}
+          >
             {/* Username */}
             <div>
-              <label style={{ display: "block", marginBottom: 8, fontSize: 16 }}>
+              <label
+                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
+              >
                 Username
               </label>
               <input
@@ -202,7 +208,9 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
 
             {/* Email */}
             <div>
-              <label style={{ display: "block", marginBottom: 8, fontSize: 16 }}>
+              <label
+                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
+              >
                 Email
               </label>
               <input
@@ -225,7 +233,9 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
 
             {/* Password */}
             <div>
-              <label style={{ display: "block", marginBottom: 8, fontSize: 16 }}>
+              <label
+                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
+              >
                 Password
               </label>
               <input
@@ -248,7 +258,7 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
 
             {/* Submit */}
             <button
-              onClick={handleSignUp}
+              type="submit"
               style={{
                 width: "100%",
                 height: 48,
@@ -262,7 +272,7 @@ export default function SignUp({ onLoginClick, onSignUpSuccess }) {
             >
               Sign Up
             </button>
-          </div>
+          </form>
 
           {message && (
             <p
