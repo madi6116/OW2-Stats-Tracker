@@ -20,5 +20,9 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
+*.slngit push --force
+
 *.sw?
+.env
+.env.local
+.env.*.local
