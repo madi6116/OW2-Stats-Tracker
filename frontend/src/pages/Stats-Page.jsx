@@ -1,279 +1,60 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 export default function StatsPage() {
-  const [roleOpen, setRoleOpen] = useState(false);
-  const [heroOpen, setHeroOpen] = useState(false);
-  const [mapOpen, setMapOpen] = useState(false);
-  const [typeOpen, setTypeOpen] = useState(false);
-
-  const [role, setRole] = useState("All Roles");
-  const [hero, setHero] = useState("All Heroes");
-  const [map, setMap] = useState("All Maps");
-  const [gameType, setGameType] = useState("All Types");
-
-  const roleRef = useRef(null);
-  const heroRef = useRef(null);
-  const mapRef = useRef(null);
-  const typeRef = useRef(null);
+  const { btag } = useParams();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
 
-  // Dropdown outside click handling
   useEffect(() => {
-    const handler = (e) => {
-      if (
-        roleRef.current &&
-        !roleRef.current.contains(e.target) &&
-        heroRef.current &&
-        !heroRef.current.contains(e.target) &&
-        mapRef.current &&
-        !mapRef.current.contains(e.target) &&
-        typeRef.current &&
-        !typeRef.current.contains(e.target)
-      ) {
-        setRoleOpen(false);
-        setHeroOpen(false);
-        setMapOpen(false);
-        setTypeOpen(false);
+    const loadStats = async () => {
+      setLoading(true);
+
+      try {
+        const res = await fetch(`http://localhost:3001/api/player/${btag}`);
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        console.error("Stats fetch failed:", err);
       }
+
+      setLoading(false);
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
-  const roleOptions = ["All Roles", "Tank", "DPS", "Support"];
-  const heroOptions = [
-    "All Heroes",
-    "Ana",
-    "Ashe",
-    "Baptiste",
-    "Bastion",
-    "Brigitte",
-    "Cassidy",
-    "D.Va",
-    "Doomfist",
-    "Echo",
-    "Freja",
-    "Genji",
-    "Hanzo",
-    "Hazard",
-    "Illari",
-    "Junker Queen",
-    "Junkrat",
-    "Juno",
-    "Kiriko",
-    "Lifeweaver",
-    "Lúcio",
-    "Mauga",
-    "Mei",
-    "Mercy",
-    "Moira",
-    "Orisa",
-    "Pharah",
-    "Ramattra",
-    "Reaper",
-    "Reinhardt",
-    "Roadhog",
-    "Sigma",
-    "Sojourn",
-    "Soldier: 76",
-    "Sombra",
-    "Symmetra",
-    "Torbjörn",
-    "Tracer",
-    "Venture",
-    "Widowmaker",
-    "Winston",
-    "Wrecking Ball",
-    "Wuyang",
-    "Zarya",
-    "Zenyatta",
-  ];
+    loadStats();
+  }, [btag]);
 
-  const mapOptions = [
-    "All Maps",
-    "Busan",
-    "Illios",
-    "Lijang Tower",
-    "Nepal",
-    "Oasis",
-    "Circuit Royal",
-    "Dorado",
-    "Havana",
-    "Junkertown",
-    "Rialto",
-    "Route 66",
-    "Watchpoint: Gibraltor",
-    "Blizzard World",
-    "Eichenwalde",
-    "Hollywood",
-    "King's Row",
-    "Midtown",
-    "Numbani",
-    "Paraiso",
-    "Colosseo",
-    "Esperanca",
-    "New Queen Street",
-    "Ayutthaya",
-    "Black Forest",
-    "Castillo",
-    "Chateau Guillard",
-    "Ecopoint: Antarctica",
-    "Kanezaka",
-    "Malevento",
-    "Necropolis",
-    "Petra",
-    "Workshop",
-    "Hanamura",
-    "Horizon Lunar Colony",
-    "Paris",
-    "Temple of Anubis",
-    "Volskaya Industries",
-  ];
-
-  const typeOptions = [
-    "All Types",
-    "Escort",
-    "Control",
-    "Hybrid",
-    "Push",
-    "Flashpoint",
-    "Clash",
-    "Capture the Flag",
-    "Deathmatch",
-    "Elimination",
-    "Special",
-  ];
-
-  const Chevron = ({ open }) => (
-    <div
-      style={{
-        width: 0,
-        height: 0,
-        borderLeft: "6px solid transparent",
-        borderRight: "6px solid transparent",
-        borderTop: open ? "none" : "6px solid white",
-        borderBottom: open ? "6px solid white" : "none",
-        transition: "transform 120ms ease",
-      }}
-    />
-  );
-
-  const FilterBox = ({
-    label,
-    value,
-    setValue,
-    open,
-    setOpen,
-    options,
-    forwardedRef,
-  }) => (
-    <div style={{ width: 204.6 }}>
-      <div style={{ height: 21 }}>
-        <div
-          style={{
-            color: "rgba(255,255,255,0.70)",
-            fontSize: 14,
-            fontFamily: "Arial",
-          }}
-        >
-          {label}
-        </div>
-      </div>
-
+  if (loading || !data) {
+    return (
       <div
-        ref={forwardedRef}
-        onClick={() => setOpen((v) => !v)}
         style={{
-          position: "relative",
-          height: 36,
-          background: "rgba(255,255,255,0.05)",
-          borderRadius: 6,
-          outline: "0.8px solid rgba(255,255,255,0.20)",
-          paddingLeft: 12,
-          paddingRight: 36,
+          width: "100%",
+          height: "100vh",
+          background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
           display: "flex",
+          justifyContent: "center",
           alignItems: "center",
-          justifyContent: "space-between",
-          cursor: "pointer",
+          color: "white",
+          fontSize: 24,
+          fontFamily: "Arial",
         }}
       >
-        <div
-          style={{
-            color: "white",
-            fontSize: 16,
-            fontFamily: "Arial",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {value}
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            right: 10,
-            top: 6,
-            width: 24,
-            height: 24,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            pointerEvents: "none",
-          }}
-        >
-          <Chevron open={open} />
-        </div>
-
-        {open && (
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 36,
-              width: "100%",
-              maxHeight: 220,
-              overflowY: "auto",
-              background: "rgba(13,17,23,0.98)",
-              borderRadius: 6,
-              outline: "0.8px solid rgba(255,255,255,0.20)",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
-              zIndex: 20,
-            }}
-          >
-            {options.map((opt) => (
-              <div
-                key={opt}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setValue(opt);
-                  setOpen(false);
-                }}
-                style={{
-                  padding: "10px 12px",
-                  color: opt === value ? "#FF5C00" : "rgba(255,255,255,0.90)",
-                  fontSize: 15,
-                  fontFamily: "Arial",
-                  cursor: "pointer",
-                  borderBottom: "0.8px solid rgba(255,255,255,0.06)",
-                  background:
-                    opt === value ? "rgba(255,92,0,0.08)" : "transparent",
-                }}
-              >
-                {opt}
-              </div>
-            ))}
-          </div>
-        )}
+        Loading stats...
       </div>
-    </div>
-  );
+    );
+  }
+
+  const summary = data.summary;
+  const competitive = summary.competitive || {};
+
+  const heroStats = data.heroes?.stats || {};
+  const mapStats = data.maps?.stats || {};
+  const recentMatches = data.games?.recent_matches || [];
 
   return (
     <div
@@ -288,9 +69,10 @@ export default function StatsPage() {
         fontFamily: "Arial",
         color: "white",
         paddingTop: 24,
+        paddingBottom: 80,
       }}
     >
-      <div style={{ width: 980, margin: "0 auto", paddingBottom: 80 }}>
+      <div style={{ width: 980, margin: "0 auto" }}>
         {/* HEADER */}
         <div
           style={{
@@ -301,10 +83,10 @@ export default function StatsPage() {
             borderBottom: "0.8px solid rgba(255,255,255,0.10)",
             display: "flex",
             flexDirection: "column",
-            background: "transparent",
             position: "sticky",
             top: 0,
             zIndex: 100,
+            background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
           }}
         >
           {/* Logo */}
@@ -350,15 +132,12 @@ export default function StatsPage() {
               to="/search"
               style={{
                 background: "rgba(255,255,255,0.1)",
-                border: "0.8px solid rgba(255,255,255,0.2)",
                 borderRadius: 6,
+                border: "0.8px solid rgba(255,255,255,0.2)",
                 padding: "8px 16px",
                 cursor: "pointer",
-                textDecoration: "none",
                 color: "white",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
+                textDecoration: "none",
               }}
             >
               Search
@@ -371,7 +150,6 @@ export default function StatsPage() {
                 border: "0.8px solid rgba(255,255,255,0.2)",
                 borderRadius: 6,
                 padding: "8px 16px",
-                fontSize: 14,
                 cursor: "pointer",
                 color: "white",
               }}
@@ -381,7 +159,7 @@ export default function StatsPage() {
           </div>
         </div>
 
-        {/* CONTENT WRAPPER */}
+        {/* CONTENT */}
         <div
           style={{
             width: 916,
@@ -391,10 +169,10 @@ export default function StatsPage() {
             gap: 32,
           }}
         >
-          {/* Back / Player Info */}
+          {/* Back & Player Info */}
           <div>
             <Link
-              to="/home"
+              to="/search"
               style={{
                 width: 80,
                 height: 40,
@@ -412,65 +190,12 @@ export default function StatsPage() {
               ← Back
             </Link>
 
-            <div style={{ fontSize: 16, marginTop: 8 }}>DemoUser-1234</div>
-            <div
-              style={{
-                color: "rgba(255,255,255,0.6)",
-                fontSize: 16,
-              }}
-            >
-              Level 420 • Americas
+            <div style={{ fontSize: 20, marginTop: 8 }}>
+              {summary.username}
             </div>
-          </div>
-
-          {/* FILTERS */}
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 12,
-              border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: 24,
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 20,
-            }}
-          >
-            <FilterBox
-              label="Role"
-              value={role}
-              setValue={setRole}
-              open={roleOpen}
-              setOpen={setRoleOpen}
-              options={roleOptions}
-              forwardedRef={roleRef}
-            />
-            <FilterBox
-              label="Hero"
-              value={hero}
-              setValue={setHero}
-              open={heroOpen}
-              setOpen={setHeroOpen}
-              options={heroOptions}
-              forwardedRef={heroRef}
-            />
-            <FilterBox
-              label="Map"
-              value={map}
-              setValue={setMap}
-              open={mapOpen}
-              setOpen={setMapOpen}
-              options={mapOptions}
-              forwardedRef={mapRef}
-            />
-            <FilterBox
-              label="Game Type"
-              value={gameType}
-              setValue={setGameType}
-              open={typeOpen}
-              setOpen={setTypeOpen}
-              options={typeOptions}
-              forwardedRef={typeRef}
-            />
+            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
+              Level {summary.level} • {summary.region}
+            </div>
           </div>
 
           {/* RANK SUMMARY */}
@@ -483,32 +208,32 @@ export default function StatsPage() {
             }}
           >
             {[
-              { label: "Tank", color: "#FA9C1E", rank: "Diamond 3" },
-              { label: "DPS", color: "#0098DC", rank: "Platinum 1" },
-              { label: "Support", color: "#768A9A", rank: "Diamond 2" },
-            ].map((r) => (
-              <div
-                key={r.label}
-                style={{
-                  flex: 1,
-                  minWidth: 250,
-                  background: "rgba(255,255,255,0.05)",
-                  border: `0.8px solid ${r.color}`,
-                  borderRadius: 12,
-                  padding: 24,
-                }}
-              >
+              { label: "Tank", key: "tank", color: "#FA9C1E" },
+              { label: "DPS", key: "damage", color: "#0098DC" },
+              { label: "Support", key: "support", color: "#768A9A" },
+            ].map((r) => {
+              const role = competitive[r.key];
+              return (
                 <div
+                  key={r.label}
                   style={{
-                    color: "rgba(255,255,255,0.6)",
-                    marginBottom: 4,
+                    flex: 1,
+                    minWidth: 250,
+                    background: "rgba(255,255,255,0.05)",
+                    border: `0.8px solid ${r.color}`,
+                    borderRadius: 12,
+                    padding: 24,
                   }}
                 >
-                  {r.label}
+                  <div style={{ color: "rgba(255,255,255,0.6)", marginBottom: 4 }}>
+                    {r.label}
+                  </div>
+                  <div style={{ fontSize: 16 }}>
+                    {role?.division || "Unranked"}
+                  </div>
                 </div>
-                <div style={{ fontSize: 16 }}>{r.rank}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* QUICK STATS */}
@@ -521,14 +246,14 @@ export default function StatsPage() {
             }}
           >
             {[
-              { label: "Games Played", value: "234" },
-              { label: "Wins", value: "136", color: "#10B981" },
-              { label: "Losses", value: "98", color: "#EF4444" },
-              { label: "Win Rate", value: "58%", color: "#FA9C1E" },
-              { label: "K/D Ratio", value: "2.4" },
-            ].map((s) => (
+              { label: "Games Played", value: summary.games_played },
+              { label: "Wins", value: summary.wins },
+              { label: "Losses", value: summary.losses },
+              { label: "Win Rate", value: summary.winrate + "%" },
+              { label: "K/D Ratio", value: summary.kd || "N/A" },
+            ].map((s, i) => (
               <div
-                key={s.label}
+                key={i}
                 style={{
                   flex: 1,
                   minWidth: 160,
@@ -546,132 +271,74 @@ export default function StatsPage() {
                 >
                   {s.label}
                 </div>
-                <div
-                  style={{
-                    fontSize: 24,
-                    color: s.color || "white",
-                  }}
-                >
-                  {s.value}
-                </div>
+                <div style={{ fontSize: 24 }}>{s.value}</div>
               </div>
             ))}
-          </div>
-
-          {/* WEEKLY PERFORMANCE */}
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 12,
-              border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: 24,
-            }}
-          >
-            <h3>📈 Weekly Performance</h3>
-            <p style={{ color: "rgba(255,255,255,0.6)" }}>
-              Placeholder for chart area
-            </p>
-          </div>
-
-          {/* PERFORMANCE OVERVIEW */}
-          <div
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 12,
-              border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: 24,
-            }}
-          >
-            <h3>⚙️ Performance Overview</h3>
-            <p style={{ color: "rgba(255,255,255,0.6)" }}>
-              Placeholder for radar chart area
-            </p>
           </div>
 
           {/* HERO STATS */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
+              padding: 24,
               borderRadius: 12,
               border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: 24,
             }}
           >
-            <h3>🦸 Hero Stats</h3>
-            <p style={{ color: "rgba(255,255,255,0.6)" }}>
-              Placeholder for hero list (Reinhardt, Tracer, Ana…)
-            </p>
+            <h3>🦸 Top Heroes</h3>
+
+            {Object.entries(heroStats)
+              .slice(0, 5)
+              .map(([hero, stats]) => (
+                <div key={hero} style={{ marginBottom: 12 }}>
+                  <strong>{hero}</strong> — {stats.winrate}% WR,{" "}
+                  {stats.games_played} games
+                </div>
+              ))}
           </div>
 
-          {/* MAP PERFORMANCE */}
+          {/* MAP STATS */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
+              padding: 24,
               borderRadius: 12,
               border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: 24,
             }}
           >
             <h3>🗺️ Map Performance</h3>
-            <p style={{ color: "rgba(255,255,255,0.6)" }}>
-              Placeholder for bar chart area
-            </p>
-          </div>
 
-          {/* COMBAT & SUPPORT STATS */}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 16,
-            }}
-          >
-            <div
-              style={{
-                flex: 1,
-                minWidth: 350,
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 12,
-                border: "0.8px solid rgba(255,255,255,0.1)",
-                padding: 24,
-              }}
-            >
-              <h3>⚔️ Combat Stats</h3>
-              <p style={{ color: "rgba(255,255,255,0.6)" }}>
-                Placeholder for eliminations, damage, deaths
-              </p>
-            </div>
-
-            <div
-              style={{
-                flex: 1,
-                minWidth: 350,
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 12,
-                border: "0.8px solid rgba(255,255,255,0.1)",
-                padding: 24,
-              }}
-            >
-              <h3>💉 Support Stats</h3>
-              <p style={{ color: "rgba(255,255,255,0.6)" }}>
-                Placeholder for healing, assists, win rate
-              </p>
-            </div>
+            {Object.entries(mapStats)
+              .slice(0, 5)
+              .map(([map, stats]) => (
+                <div key={map} style={{ marginBottom: 12 }}>
+                  <strong>{map}</strong> — {stats.winrate}% WR (
+                  {stats.games} games)
+                </div>
+              ))}
           </div>
 
           {/* RECENT MATCHES */}
           <div
             style={{
               background: "rgba(255,255,255,0.05)",
+              padding: 24,
               borderRadius: 12,
               border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: 24,
             }}
           >
-            <h3>📅 Recent Matches (5)</h3>
-            <p style={{ color: "rgba(255,255,255,0.6)" }}>
-              Placeholder for table (Date, Result, Map, Type, Hero, K/D)
-            </p>
+            <h3>📅 Recent Matches</h3>
+
+            {recentMatches.length === 0 && (
+              <div>No recent matches available.</div>
+            )}
+
+            {recentMatches.map((m, i) => (
+              <div key={i} style={{ marginBottom: 10 }}>
+                {m.result} — {m.map} — {m.competition} — {m.hero} — K/D:{" "}
+                {m.kd}
+              </div>
+            ))}
           </div>
         </div>
       </div>

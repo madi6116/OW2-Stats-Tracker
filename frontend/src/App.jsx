@@ -38,6 +38,7 @@ export default function App() {
         path="/stats"
         element={session ? <StatsPage /> : <Navigate to="/" replace />}
       />
+      <Route path="/stats/:btag" element={<StatsPage />} />
 
       {/* Catch-all redirect */}
       <Route path="*" element={<Navigate to="/" replace />} />

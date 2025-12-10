@@ -4,17 +4,28 @@ import { supabase } from "../supabaseClient";
 
 export default function SearchPage() {
   const [battleTag, setBattleTag] = useState("");
-
-  const handleSearch = () => {
-    if (!battleTag.trim()) {
-      alert("⚠️ Please enter a BattleTag (e.g., Player-1234 or Player#1234)");
-      return;
-    }
-    alert(`🔍 Searching for: ${battleTag}`);
-  };
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleSearch = async () => {
+    if (!battleTag.trim()) return;
+
+    setLoading(true);
+    setResults([]);
+
+    try {
+      const res = await fetch(`http://localhost:3001/api/search/${battleTag}`);
+      const data = await res.json();
+      setResults(data);
+    } catch {
+      alert("Search failed.");
+    }
+
+    setLoading(false);
   };
 
   return (
@@ -22,18 +33,15 @@ export default function SearchPage() {
       style={{
         width: "100%",
         minHeight: "100vh",
-        position: "relative",
         background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
         fontFamily: "Arial",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "flex-start",
         alignItems: "center",
         paddingTop: 24,
-        boxSizing: "border-box",
       }}
     >
-      {/* Header */}
+      {/* HEADER */}
       <div
         style={{
           width: 980,
@@ -69,7 +77,7 @@ export default function SearchPage() {
             </div>
           </div>
 
-          {/* Links */}
+          {/* Navigation */}
           <div
             style={{
               height: 40,
@@ -82,15 +90,9 @@ export default function SearchPage() {
             <Link
               to="/home"
               style={{
-                width: 74.9,
-                height: 40,
-                borderRadius: 6,
-                cursor: "pointer",
                 color: "rgba(255,255,255,0.7)",
                 fontSize: 16,
                 textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
               }}
             >
               Home
@@ -99,15 +101,11 @@ export default function SearchPage() {
             <button
               onClick={handleLogout}
               style={{
-                width: 77.5,
-                height: 38.6,
                 padding: "8.8px 16.8px",
                 background: "rgba(255,255,255,0.1)",
                 borderRadius: 6,
                 border: "0.8px solid rgba(255,255,255,0.2)",
                 cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
               }}
             >
               <span style={{ color: "white", fontSize: 14 }}>Logout</span>
@@ -116,46 +114,28 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {/* Search Section */}
+      {/* SEARCH INPUT */}
       <div
         style={{
           width: "100%",
           maxWidth: 916,
-          height: 557.8,
           marginTop: 24,
-          position: "relative",
           display: "flex",
           flexDirection: "column",
           gap: 32,
-          marginLeft: "auto",
-          marginRight: "auto",
         }}
       >
-        {/* Input Field */}
-        <div
-          style={{
-            height: 97.6,
-            display: "flex",
-            flexDirection: "column",
-            gap: 24,
-          }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div style={{ color: "white", fontSize: 16 }}>Player Search</div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-            }}
-          >
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <input
               value={battleTag}
               onChange={(e) => setBattleTag(e.target.value)}
-              placeholder="Enter BattleTag (e.g., Player-1234 or Player#1234)"
+              placeholder="Enter Username or BattleTag (e.g. Player-1234)"
               style={{
                 flex: 1,
-                height: 49.6,
+                height: 50,
                 padding: "12px 16px",
                 background: "rgba(255,255,255,0.05)",
                 borderRadius: 8,
@@ -170,18 +150,13 @@ export default function SearchPage() {
               onClick={handleSearch}
               style={{
                 width: 119,
-                height: 49.6,
-                padding: "0 24px",
+                height: 50,
                 background: "#FF5C00",
                 borderRadius: 8,
                 border: "none",
                 color: "white",
                 fontSize: 16,
                 cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
               }}
             >
               🔍 Search
@@ -189,54 +164,55 @@ export default function SearchPage() {
           </div>
         </div>
 
-        {/* Placeholder Section */}
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 916,
-            height: 328,
-            padding: "64px 0",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 24,
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
-          <div style={{ width: 120, height: 120, position: "relative" }}>
-            <div
-              style={{
-                width: 113.68,
-                height: 113.68,
-                position: "absolute",
-                left: 3.16,
-                top: 3.16,
-                border: "6.32px solid #5C6A75",
-                borderRadius: "50%",
-              }}
-            ></div>
+        {/* LOADING */}
+        {loading && (
+          <div style={{ color: "white", fontSize: 18 }}>Searching...</div>
+        )}
+
+        {/* RESULTS */}
+        {!loading && results.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {results.map((p) => (
+              <Link
+                to={`/stats/${p.battletag}`}
+                key={p.battletag}
+                style={{
+                  textDecoration: "none",
+                  color: "white",
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: 8,
+                  padding: 16,
+                  border: "0.8px solid rgba(255,255,255,0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                }}
+              >
+                <img
+                  src={p.icon}
+                  width={60}
+                  height={60}
+                  style={{ borderRadius: 6 }}
+                />
+
+                <div style={{ flexGrow: 1 }}>
+                  <div style={{ fontSize: 16, fontWeight: "bold" }}>
+                    {p.username}
+                  </div>
+                  <div style={{ color: "rgba(255,255,255,0.6)" }}>
+                    {p.battletag}
+                  </div>
+                </div>
+
+                <div style={{ textAlign: "right" }}>
+                  <div>Tank: {p.ranks?.tank?.division || "—"}</div>
+                  <div>DPS: {p.ranks?.damage?.division || "—"}</div>
+                  <div>Support: {p.ranks?.support?.division || "—"}</div>
+                </div>
+              </Link>
+            ))}
           </div>
-          <div style={{ width: "100%", maxWidth: 382.73, textAlign: "center" }}>
-            <div
-              style={{
-                color: "white",
-                fontSize: 16,
-                marginBottom: 8,
-              }}
-            >
-              Search for a player
-            </div>
-            <div
-              style={{
-                color: "rgba(255,255,255,0.6)",
-                fontSize: 16,
-              }}
-            >
-              Enter a BattleTag to view player stats and performance
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

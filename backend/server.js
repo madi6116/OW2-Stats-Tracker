@@ -1,84 +1,95 @@
-import dotenv from "dotenv";
-dotenv.config(); // load .env first
-
 import express from "express";
-import cors from "cors";
 import axios from "axios";
-import { createClient } from "@supabase/supabase-js";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ------------------ SUPABASE SETUP ------------------
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
-);
-
-// ------------------ TEST ROUTE ------------------
-app.get("/api/test", (req, res) =>
-  res.json({ ok: true, url: process.env.SUPABASE_URL })
-);
-
-// ------------------ SAVE SEARCH TO SUPABASE ------------------
-app.post("/api/save-search", async (req, res) => {
-  const { battletag } = req.body;
+// 🔍 Search by BattleTag or name
+app.get("/api/search/:query", async (req, res) => {
   try {
-    const { error } = await supabase
-      .from("search_history")
-      .insert({ battletag });
-    if (error) throw error;
-    res.json({ success: true });
+    const query = req.params.query;
+
+    // If exact BattleTag search: Player-1234 or Player#1234
+    const isBattleTag = query.includes("#") || query.includes("-");
+
+    if (isBattleTag) {
+      const formatted = query.replace("#", "-");
+
+      try {
+        const fast = await axios.get(
+          `https://overfast-api.tekrop.fr/players/${formatted}`
+        );
+
+        const s = fast.data.summary;
+
+        return res.json([
+          {
+            battletag: s.battle_tag,
+            username: s.username,
+            icon: s.portrait,
+            level: s.level,
+            endorsement: s.endorsement,
+            ranks: s.competitive,
+          },
+        ]);
+      } catch (err) {
+        return res.json([]);
+      }
+    }
+
+    // Otherwise: do a partial username search
+    const searchRes = await axios.get(
+      `https://overfast-api.tekrop.fr/players/search?name=${encodeURIComponent(
+        query
+      )}`
+    );
+
+    const filtered = searchRes.data.filter(
+      (p) => p.platform === "pc" && p.privacy === false
+    );
+
+    // Fetch basic stats for each result
+    const results = [];
+    for (const p of filtered.slice(0, 20)) {
+      try {
+        const fast = await axios.get(
+          `https://overfast-api.tekrop.fr/players/${p.battle_tag}`
+        );
+        const s = fast.data.summary;
+
+        results.push({
+          battletag: s.battle_tag,
+          username: s.username,
+          icon: s.portrait,
+          level: s.level,
+          endorsement: s.endorsement,
+          ranks: s.competitive,
+        });
+      } catch {}
+    }
+
+    return res.json(results);
   } catch (err) {
-    console.error("Supabase insert error:", err.message);
-    res.status(400).json({ error: err.message });
+    console.log(err.response?.data || err);
+    res.status(500).json({ error: "Search failed" });
   }
 });
 
-// ------------------ GET SEARCH HISTORY ------------------
-app.get("/api/history", async (_req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from("search_history")
-      .select("*")
-      .order("searched_at", { ascending: false })
-      .limit(10);
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    console.error("Supabase fetch error:", err.message);
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// ------------------ OVERFAST API: FETCH PLAYER STATS ------------------
+// 📊 FULL PLAYER STATS (used by StatsPage)
 app.get("/api/player/:btag", async (req, res) => {
   try {
-    const btag = encodeURIComponent(req.params.btag);
-    const url = `https://overfast-api.tekrop.fr/players/${btag}/summary`;
+    const btag = req.params.btag;
 
-    const { data } = await axios.get(url);
+    const fast = await axios.get(
+      `https://overfast-api.tekrop.fr/players/${btag}`
+    );
 
-    // Optional: save search automatically when player data is fetched
-    await supabase.from("search_history").insert({ battletag: req.params.btag });
-
-    res.json(data);
+    res.json(fast.data);
   } catch (err) {
-    console.error("OverFast API error:", err.message);
-    res
-      .status(404)
-      .json({ error: "Player not found or OverFast API unavailable" });
+    res.status(404).json({ error: "Player not found" });
   }
 });
 
-// ------------------ DEFAULT ROUTE ------------------
-app.get("/", (req, res) => {
-  res.send("OW2 Insight Tracker backend is running 🚀");
-});
-
-// ------------------ SERVER LISTEN ------------------
-const PORT = process.env.PORT || 5174;
-app.listen(PORT, () =>
-  console.log(`✅ Backend running on http://localhost:${PORT}`)
-);
+app.listen(3001, () => console.log("Backend running on port 3001"));
