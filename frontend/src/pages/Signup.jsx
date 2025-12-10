@@ -7,6 +7,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [battleTag, setBattleTag] = useState("");
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -17,12 +18,16 @@ export default function SignUp() {
     }
 
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { username },
-      },
-    });
+  email,
+  password,
+  options: {
+    data: {
+      username,
+      battleTag,   
+    },
+  },
+});
+
 
     if (error) setMessage(error.message);
     else setMessage("Account created! Check your email to verify.");
@@ -243,6 +248,30 @@ export default function SignUp() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
+                style={{
+                  width: "100%",
+                  padding: 12,
+                  borderRadius: 6,
+                  background: "rgba(255,255,255,0.05)",
+                  border: "0.8px solid rgba(255,255,255,0.2)",
+                  color: "white",
+                  fontSize: 16,
+                  outline: "none",
+                }}
+              />
+            </div>
+            {/* BattleTag */}
+            <div>
+              <label
+                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
+              >
+                BattleTag
+              </label>
+              <input
+                type="text"
+                value={battleTag}
+                onChange={(e) => setBattleTag(e.target.value)}
+                placeholder="Enter your BattleTag (e.g., Player-1234)"
                 style={{
                   width: "100%",
                   padding: 12,

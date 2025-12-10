@@ -1,18 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import { Link } from "react-router-dom";
 import { useSession } from "../hooks/SessionHook";
+import { Link } from "react-router-dom";
 
-export default function Login() {
+export default function Login({ onLoginSuccess, onSignUpClick }) {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [showLinkModal, setShowLinkModal] = useState(false);
 
-  useSession();
-  // Redirect handled automatically in App.jsx
+  const { session } = useSession();
 
+  useEffect(() => {
+    // If user is already logged in, check if BattleTag exists
+    if (session) {
+      const meta = session.user.user_metadata;
+      if (!meta.battleTag) {
+        setShowLinkModal(true);
+        return;
+      }
+      onLoginSuccess();
+    }
+  }, [session, onLoginSuccess]);
+
+  // 🔵 Perform Email/Password Login
   const handleLogin = async (e) => {
     e.preventDefault();
+
     if (!email || !password) {
       setMessage("⚠️ Please enter both email and password.");
       return;
@@ -23,8 +37,50 @@ export default function Login() {
       password,
     });
 
-    if (error) setMessage(error.message);
-    else setMessage("Logged in successfully!");
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setMessage("Logged in successfully!");
+  };
+
+  // 🔵 Handle Account Linking (BattleTag)
+  const handleLinkAccount = async (battleTag, setError) => {
+    const formatted = battleTag.replace("#", "-");
+
+    try {
+      // Verify Overwatch account exists via backend
+      const res = await fetch(`http://localhost:3001/api/player/${formatted}`);
+      const json = await res.json();
+
+      if (json.error || !json.summary) {
+        setError("Invalid BattleTag. Please try again.");
+        return;
+      }
+
+      const summary = json.summary;
+
+      // Store metadata inside Supabase Auth
+      await supabase.auth.updateUser({
+        data: {
+          battleTag: formatted,
+          region: summary.region,
+          platform: summary.platform || "pc",
+          level: summary.level,
+          endorsement: summary.endorsement,
+          tankRank: summary.competitive?.tank?.division || null,
+          dpsRank: summary.competitive?.damage?.division || null,
+          supportRank: summary.competitive?.support?.division || null,
+        },
+      });
+
+      setShowLinkModal(false);
+      onLoginSuccess();
+
+    } catch {
+      setError("Unexpected error verifying BattleTag.");
+    }
   };
 
   return (
@@ -32,22 +88,22 @@ export default function Login() {
       style={{
         width: "100%",
         height: "100vh",
-        background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%), white",
+        background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         fontFamily: "Arial",
       }}
     >
-      <div
-        style={{
-          width: 436,
-          height: 654.4,
-          position: "relative",
-          color: "white",
-        }}
-      >
-        {/* Header Section */}
+      {/* 🔵 Link Account Modal */}
+      {showLinkModal && (
+        <LinkAccountModal onSubmit={handleLinkAccount} />
+      )}
+
+      {/* LOGIN CARD */}
+      <div style={{ width: 436, height: 654.4, position: "relative", color: "white" }}>
+        
+        {/* Header */}
         <div
           style={{
             width: 436,
@@ -57,7 +113,6 @@ export default function Login() {
             left: 0,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "flex-start",
             alignItems: "center",
             gap: 16,
           }}
@@ -84,22 +139,21 @@ export default function Login() {
                 }}
               ></div>
             </div>
-            <div style={{ color: "white", fontSize: 16, textAlign: "center" }}>
-              Overwatch Stats Tracker
-            </div>
+
+            <div style={{ fontSize: 16 }}>Overwatch Stats Tracker</div>
           </div>
+
           <div
             style={{
               color: "rgba(255,255,255,0.7)",
               fontSize: 16,
-              textAlign: "center",
             }}
           >
             Track your competitive performance
           </div>
         </div>
 
-        {/* Card */}
+        {/* Password Login Form */}
         <div
           style={{
             width: 436,
@@ -107,7 +161,6 @@ export default function Login() {
             padding: "32.8px",
             position: "absolute",
             top: 176,
-            left: 0,
             background: "rgba(255,255,255,0.05)",
             borderRadius: 12,
             outline: "0.8px solid rgba(255,255,255,0.1)",
@@ -118,20 +171,13 @@ export default function Login() {
         >
           <div>
             <div style={{ fontSize: 16, marginBottom: 4 }}>Welcome</div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
+            <div style={{ color: "rgba(255,255,255,0.6)" }}>
               Login or create an account to track your stats
             </div>
           </div>
 
           {/* Buttons */}
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              height: 49.6,
-              marginBottom: 8,
-            }}
-          >
+          <div style={{ display: "flex", gap: 8, height: 49.6 }}>
             <button
               style={{
                 flex: 1,
@@ -140,46 +186,33 @@ export default function Login() {
                 border: "0.8px solid rgba(255,255,255,0.2)",
                 color: "white",
                 fontSize: 16,
-                cursor: "pointer",
               }}
             >
               Login
             </button>
 
-            <Link
-              to="/signup"
+            <button
+              onClick={onSignUpClick}
               style={{
                 flex: 1,
                 borderRadius: 6,
-                border: "0.8px solid rgba(255,255,255,0.2)",
                 background: "transparent",
+                border: "0.8px solid rgba(255,255,255,0.2)",
                 color: "white",
                 fontSize: 16,
-                textAlign: "center",
-                lineHeight: "49.6px",
-                textDecoration: "none",
-                cursor: "pointer",
               }}
             >
               Sign Up
-            </Link>
+            </button>
           </div>
 
-          {/* Form Fields */}
-          <form
-            onSubmit={handleLogin}
-            style={{ display: "flex", flexDirection: "column", gap: 24 }}
-          >
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div>
-              <label
-                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
-              >
-                Email
-              </label>
+              <label style={{ display: "block", marginBottom: 8 }}>Email</label>
               <input
-                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                type="email"
                 placeholder="Enter your email"
                 style={{
                   width: "100%",
@@ -188,22 +221,16 @@ export default function Login() {
                   background: "rgba(255,255,255,0.05)",
                   border: "0.8px solid rgba(255,255,255,0.2)",
                   color: "white",
-                  fontSize: 16,
-                  outline: "none",
                 }}
               />
             </div>
 
             <div>
-              <label
-                style={{ display: "block", marginBottom: 8, fontSize: 16 }}
-              >
-                Password
-              </label>
+              <label style={{ display: "block", marginBottom: 8 }}>Password</label>
               <input
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                type="password"
                 placeholder="Enter your password"
                 style={{
                   width: "100%",
@@ -212,8 +239,6 @@ export default function Login() {
                   background: "rgba(255,255,255,0.05)",
                   border: "0.8px solid rgba(255,255,255,0.2)",
                   color: "white",
-                  fontSize: 16,
-                  outline: "none",
                 }}
               />
             </div>
@@ -228,7 +253,6 @@ export default function Login() {
                 border: "none",
                 color: "white",
                 fontSize: 16,
-                cursor: "pointer",
               }}
             >
               Login
@@ -236,18 +260,85 @@ export default function Login() {
           </form>
 
           {message && (
-            <p
-              style={{
-                textAlign: "center",
-                marginTop: 12,
-                color: "white",
-                fontSize: 14,
-              }}
-            >
+            <p style={{ textAlign: "center", color: "white", marginTop: 12 }}>
               {message}
             </p>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===========================================================
+   🔵 BattleTag Linking Modal (NO unused vars, NO syntax errors)
+   =========================================================== */
+function LinkAccountModal({ onSubmit }) {
+  const [battleTag, setBattleTag] = useState("");
+  const [error, setError] = useState("");
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 9999,
+      }}
+    >
+      <div
+        style={{
+          width: 400,
+          background: "#0D1117",
+          borderRadius: 12,
+          padding: 24,
+          border: "1px solid #333",
+          color: "white",
+        }}
+      >
+        <h2 style={{ marginBottom: 12 }}>Link Your Overwatch Account</h2>
+
+        <p style={{ marginBottom: 16, color: "rgba(255,255,255,0.7)" }}>
+          Enter your BattleTag to personalize your experience.
+        </p>
+
+        <input
+          value={battleTag}
+          onChange={(e) => setBattleTag(e.target.value)}
+          placeholder="Player-1234"
+          style={{
+            width: "100%",
+            padding: 12,
+            borderRadius: 6,
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            color: "white",
+          }}
+        />
+
+        {error && (
+          <div style={{ marginTop: 12, color: "#FF5C00" }}>{error}</div>
+        )}
+
+        <button
+          onClick={() => onSubmit(battleTag, setError)}
+          style={{
+            width: "100%",
+            marginTop: 20,
+            padding: 12,
+            background: "#FF5C00",
+            borderRadius: 6,
+            border: "none",
+            color: "white",
+            fontSize: 16,
+            cursor: "pointer",
+          }}
+        >
+          Link Account
+        </button>
       </div>
     </div>
   );

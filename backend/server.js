@@ -80,12 +80,9 @@ app.get("/api/search/:query", async (req, res) => {
 // 📊 FULL PLAYER STATS (used by StatsPage)
 app.get("/api/player/:btag", async (req, res) => {
   try {
-    const btag = req.params.btag;
-
     const fast = await axios.get(
-      `https://overfast-api.tekrop.fr/players/${btag}`
+      `https://overfast-api.tekrop.fr/players/${req.params.btag}`
     );
-
     res.json(fast.data);
   } catch (err) {
     res.status(404).json({ error: "Player not found" });

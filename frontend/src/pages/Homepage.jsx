@@ -1,7 +1,20 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { useSession } from "../hooks/SessionHook";
 
-export default function Homepage({ username }) {
+export default function Homepage() {
+  const { session } = useSession();
+  const user = session?.user;
+
+  // Pull metadata from user
+  const battleTag = user?.user_metadata?.battleTag || "Player";
+  const region = user?.user_metadata?.region || "Unknown Region";
+  const level = user?.user_metadata?.level || "—";
+  const tankRank = user?.user_metadata?.tankRank || "Unranked";
+  const dpsRank = user?.user_metadata?.dpsRank || "Unranked";
+  const supportRank = user?.user_metadata?.supportRank || "Unranked";
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -11,8 +24,7 @@ export default function Homepage({ username }) {
       style={{
         width: "100%",
         minHeight: "100vh",
-        position: "relative",
-        background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%), white",
+        background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
         display: "flex",
         overflowY: "auto",
         fontFamily: "Arial",
@@ -23,13 +35,12 @@ export default function Homepage({ username }) {
           width: 980,
           minHeight: "100vh",
           margin: "0 auto",
-          background: "linear-gradient(180deg, #1A2332 0%, #0D1117 100%)",
+          background: "transparent",
           color: "white",
-          position: "relative",
-          paddingBottom: 80, // 🔥 Ensures bottom content never cuts off
+          paddingBottom: 80,
         }}
       >
-        {/* Header */}
+        {/* HEADER */}
         <div
           style={{
             width: 980,
@@ -38,13 +49,8 @@ export default function Homepage({ username }) {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
+            {/* Logo */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 40, height: 40, position: "relative" }}>
                 <div
                   style={{
@@ -61,7 +67,7 @@ export default function Homepage({ username }) {
               <div style={{ fontSize: 16 }}>Overwatch Stats Tracker</div>
             </div>
 
-            {/* Nav bar */}
+            {/* Navigation */}
             <div
               style={{
                 display: "flex",
@@ -77,9 +83,8 @@ export default function Homepage({ username }) {
                 style={{
                   background: "rgba(255,255,255,0.1)",
                   border: "0.8px solid rgba(255,255,255,0.2)",
-                  borderRadius: 6,
                   padding: "8px 16px",
-                  cursor: "pointer",
+                  borderRadius: 6,
                   color: "white",
                   textDecoration: "none",
                 }}
@@ -92,10 +97,10 @@ export default function Homepage({ username }) {
                 style={{
                   background: "rgba(255,255,255,0.1)",
                   border: "0.8px solid rgba(255,255,255,0.2)",
-                  borderRadius: 6,
                   padding: "8px 16px",
-                  cursor: "pointer",
+                  borderRadius: 6,
                   color: "white",
+                  cursor: "pointer",
                 }}
               >
                 Logout
@@ -104,337 +109,183 @@ export default function Homepage({ username }) {
           </div>
         </div>
 
-        {/* Content Wrapper */}
+        {/* CONTENT */}
         <div
           style={{
             width: 916,
             margin: "0 auto",
             paddingTop: 32,
-            paddingBottom: 50,
             display: "flex",
             flexDirection: "column",
             gap: 32,
           }}
         >
-          {/* Welcome */}
+          {/* WELCOME */}
           <div>
-            <div style={{ fontSize: 16, marginBottom: 4 }}>
-              {`Welcome back, ${username || "User"}!`}
+            <div style={{ fontSize: 20, marginBottom: 6 }}>
+              Welcome back, {battleTag}!
             </div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
-              Track and analyze your Overwatch performance
+            <div style={{ color: "rgba(255,255,255,0.6)" }}>
+              Level {level} • {region}
             </div>
           </div>
 
-          {/* QUICK SEARCH + YOUR STATS */}
+          {/* QUICK SEARCH & MY STATS */}
           <div
             style={{
               display: "flex",
-              flexWrap: "nowrap",
               gap: 24,
               justifyContent: "space-between",
-              alignItems: "stretch",
             }}
           >
             {/* Quick Search */}
             <div
               style={{
                 flex: "0 0 446px",
-                maxWidth: "48%",
                 background: "rgba(255,255,255,0.05)",
-                borderRadius: 12,
                 border: "0.8px solid rgba(255,255,255,0.1)",
-                padding: "24.8px",
+                borderRadius: 12,
+                padding: 24,
               }}
             >
               <div
                 style={{
+                  fontSize: 16,
+                  marginBottom: 16,
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 16,
                 }}
               >
-                <div style={{ fontSize: 16 }}>Quick Search</div>
+                <span>Quick Search</span>
                 <div
                   style={{
                     width: 20,
                     height: 20,
-                    border: "1.67px solid #FA9C1E",
                     borderRadius: "50%",
+                    border: "1.6px solid #FA9C1E",
                   }}
                 ></div>
               </div>
 
-              <div
-                style={{
-                  color: "rgba(255,255,255,0.6)",
-                  fontSize: 16,
-                  marginBottom: 16,
-                }}
-              >
-                Search for any player’s stats and performance
-              </div>
+              <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
+                Look up any Overwatch player's stats.
+              </p>
 
               <Link
                 to="/search"
                 style={{
-                  width: "100%",
-                  height: 48,
-                  background: "#FF5C00",
-                  borderRadius: 6,
-                  textAlign: "center",
-                  lineHeight: "48px",
-                  cursor: "pointer",
-                  color: "white",
-                  textDecoration: "none",
                   display: "block",
+                  textAlign: "center",
+                  background: "#FF5C00",
+                  padding: "12px",
+                  borderRadius: 6,
+                  textDecoration: "none",
+                  color: "white",
                 }}
               >
                 Search Players
               </Link>
             </div>
 
-            {/* YOUR STATS */}
+            {/* MY STATS */}
             <div
               style={{
                 flex: "0 0 446px",
-                maxWidth: "48%",
                 background: "rgba(255,255,255,0.05)",
-                borderRadius: 12,
                 border: "0.8px solid rgba(255,255,255,0.1)",
-                padding: "24.8px",
+                borderRadius: 12,
+                padding: 24,
               }}
             >
               <div
                 style={{
+                  fontSize: 16,
+                  marginBottom: 16,
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 16,
                 }}
               >
-                <div style={{ fontSize: 16 }}>Your Stats</div>
+                <span>Your Stats</span>
                 <div
                   style={{
                     width: 20,
                     height: 20,
-                    border: "1.67px solid #0098DC",
                     borderRadius: "50%",
+                    border: "1.6px solid #0098DC",
                   }}
                 ></div>
               </div>
 
-              <div
-                style={{
-                  color: "rgba(255,255,255,0.6)",
-                  fontSize: 16,
-                  marginBottom: 16,
-                }}
-              >
-                View your detailed performance metrics
-              </div>
+              <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: 16 }}>
+                View personalized performance metrics.
+              </p>
 
               <Link
-                to="/stats"
+                to={`/stats/${battleTag}`}
                 style={{
-                  width: "100%",
-                  height: 48,
-                  background: "#0098DC",
-                  borderRadius: 6,
-                  textAlign: "center",
-                  lineHeight: "48px",
-                  cursor: "pointer",
-                  color: "white",
-                  textDecoration: "none",
                   display: "block",
+                  textAlign: "center",
+                  background: "#0098DC",
+                  padding: "12px",
+                  borderRadius: 6,
+                  textDecoration: "none",
+                  color: "white",
                 }}
               >
-                View Stats
+                View My Stats
               </Link>
             </div>
           </div>
 
-          {/* THE SHOP (RESTORED FULL SECTION) */}
+          {/* QUICK ROLE RANK SUMMARY */}
           <div
             style={{
-              width: 916,
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 12,
-              border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: "24.8px",
-              position: "relative",
-            }}
-          >
-            <div style={{ fontSize: 16, marginBottom: 16 }}>The Shop</div>
-            <div
-              style={{
-                color: "rgba(255,255,255,0.6)",
-                fontSize: 16,
-                marginBottom: 16,
-              }}
-            >
-              The Shop updates in: <b>1d 12h 43m 22s</b>
-            </div>
-
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-              <button
-                style={{
-                  flex: 1,
-                  minWidth: 200,
-                  height: 48,
-                  background: "#9355FF",
-                  borderRadius: 6,
-                  border: "none",
-                  color: "white",
-                  fontSize: 16,
-                  cursor: "pointer",
-                }}
-              >
-                Currently in the Shop
-              </button>
-
-              <button
-                style={{
-                  flex: 1,
-                  minWidth: 200,
-                  height: 48,
-                  background: "#FA9C1E",
-                  borderRadius: 6,
-                  border: "none",
-                  color: "white",
-                  fontSize: 16,
-                  cursor: "pointer",
-                }}
-              >
-                Coming to the Shop Soon
-              </button>
-            </div>
-          </div>
-
-          {/* RECENT SEARCHES (FULLY RESTORED) */}
-          <div
-            style={{
-              width: 916,
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 12,
-              border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: "24.8px",
               display: "flex",
-              flexDirection: "column",
               gap: 16,
+              flexWrap: "wrap",
+              justifyContent: "space-between",
             }}
           >
-            <div style={{ fontSize: 16 }}>Recent Searches</div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
-              Your recently viewed players
-            </div>
-
-            {["Player-1234", "ProGamer-5678", "OverwatchFan-9012"].map(
-              (name, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    borderRadius: 8,
-                    border: "0.8px solid rgba(255,255,255,0.1)",
-                    padding: "16.8px",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: 4,
-                    }}
-                  >
-                    <span>{name}</span>
-                    <span
-                      style={{
-                        color: "rgba(255,255,255,0.4)",
-                        fontSize: 12,
-                      }}
-                    >
-                      {i === 0
-                        ? "2 hours ago"
-                        : i === 1
-                        ? "1 day ago"
-                        : "3 days ago"}
-                    </span>
-                  </div>
-
-                  <div
-                    style={{
-                      color: "rgba(255,255,255,0.6)",
-                      fontSize: 14,
-                    }}
-                  >
-                    {i === 0
-                      ? "Diamond 3"
-                      : i === 1
-                      ? "Master 2"
-                      : "Platinum 1"}
-                  </div>
-                </div>
-              )
-            )}
-          </div>
-
-          {/* QUICK STATS (FULLY RESTORED) */}
-          <div
-            style={{
-              width: 916,
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: 12,
-              border: "0.8px solid rgba(255,255,255,0.1)",
-              padding: "24.8px",
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            <div style={{ fontSize: 16 }}>Quick Stats</div>
-            <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>
-              Overview of your performance
+            <div
+              style={{
+                flex: 1,
+                minWidth: 250,
+                background: "rgba(255,255,255,0.05)",
+                padding: 24,
+                borderRadius: 12,
+                border: "1px solid #FA9C1E",
+              }}
+            >
+              <p style={{ color: "rgba(255,255,255,0.7)" }}>Tank Rank</p>
+              <h3>{tankRank}</h3>
             </div>
 
             <div
               style={{
-                background: "rgba(250,156,30,0.1)",
-                border: "0.8px solid rgba(250,156,30,0.2)",
-                borderRadius: 8,
-                padding: "16.8px",
+                flex: 1,
+                minWidth: 250,
+                background: "rgba(255,255,255,0.05)",
+                padding: 24,
+                borderRadius: 12,
+                border: "1px solid #0098DC",
               }}
             >
-              <div>
-                Tank Rank: <b>Diamond 3 ↑2</b>
-              </div>
+              <p style={{ color: "rgba(255,255,255,0.7)" }}>DPS Rank</p>
+              <h3>{dpsRank}</h3>
             </div>
 
             <div
               style={{
-                background: "rgba(0,152,220,0.1)",
-                border: "0.8px solid rgba(0,152,220,0.2)",
-                borderRadius: 8,
-                padding: "16.8px",
+                flex: 1,
+                minWidth: 250,
+                background: "rgba(255,255,255,0.05)",
+                padding: 24,
+                borderRadius: 12,
+                border: "1px solid #768A9A",
               }}
             >
-              <div>
-                DPS Rank: <b>Platinum 1 ↑1</b>
-              </div>
-            </div>
-
-            <div
-              style={{
-                background: "rgba(118,138,154,0.1)",
-                border: "0.8px solid rgba(118,138,154,0.2)",
-                borderRadius: 8,
-                padding: "16.8px",
-              }}
-            >
-              <div>
-                Support Rank: <b>Diamond 2 ↓1</b>
-              </div>
+              <p style={{ color: "rgba(255,255,255,0.7)" }}>Support Rank</p>
+              <h3>{supportRank}</h3>
             </div>
           </div>
         </div>
